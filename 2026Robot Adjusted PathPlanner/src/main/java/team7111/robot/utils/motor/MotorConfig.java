@@ -4,7 +4,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.thethriftybot.devices.ThriftyNova.ThriftyNovaConfig;
-import com.thethriftybot.core
 
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
 import edu.wpi.first.math.controller.ArmFeedforward;

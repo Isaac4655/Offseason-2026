@@ -4,13 +4,18 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.thethriftybot.devices.ThriftyNova;
 import com.thethriftybot.devices.ThriftyNova.ThriftyNovaConfig;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
+
+import java.lang.invoke.ClassSpecializer.Factory;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -162,6 +167,7 @@ public class NovaMotor implements Motor {
         }else{
             motor.setVoltage(totalOutput);
         }
+        SmartDashboard.putNumber("Motor " + id + " pid output", totalOutput);
     }
 
     public void setPID(double p, double i, double d) {
@@ -199,13 +205,41 @@ public class NovaMotor implements Motor {
         return feedforward;
     }
 
+    /*
+    * Nova config only takes a single static feed forward (kS) additional ff values found in Nova profiler
+    * Nova configs PIDConfiguration takes P, I, D, and F, feed forward is not a seperate object, and cannot be expanded.
+    */
+
     public void setFeedFoward(double kS, double kV, double kA) {
-        novaConfig.
+        feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     }
 
     public void periodic() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'periodic'");
+        if (encoder != null){
+            encoder.periodic();
+        }
+        SmartDashboard.putNumber("Motor " + id + " setpoint", currentSetpoint);
+        SmartDashboard.putBoolean("Motor " + id + " isAtSetpoint", isAtSetpoint(0.05));
     }
+
+    public void setFollower(boolean isFollower, int id, boolean isInverted){
+        if(isFollower && !this.isFollower){
+            motor.follow(id);
+            motor.factoryReset();
+            motor.applyConfig(novaConfig);
+        }
+        this.isFollower = isFollower;
+    }
+
+    public void setSpeedLimits(double positiveSpeed, double negativeSpeed, boolean isVoltage) {
+        if(isVoltage){
+            positiveVoltageLimit = positiveSpeed;
+            negativeVoltageLimit = negativeSpeed;
+        }else{
+            positiveVelocityLimit = positiveSpeed;
+            negativeVelocityLimit = negativeSpeed;
+        }
+    }
+
     
 }
